@@ -5,6 +5,6 @@
         public string NewToken { get; set; }
 
         // This would be returned to front-end
-        public int MyProperty { get; set; }
+        public UserInfoResult UserInfo { get; set; }
     }
 }
