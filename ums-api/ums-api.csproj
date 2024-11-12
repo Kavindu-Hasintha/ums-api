@@ -21,7 +21,9 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Constants\" />
-    <Folder Include="Dtos\" />
+    <Folder Include="Dtos\General\" />
+    <Folder Include="Dtos\Log\" />
+    <Folder Include="Dtos\Message\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Services\" />
   </ItemGroup>
