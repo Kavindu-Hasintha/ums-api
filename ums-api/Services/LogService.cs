@@ -25,9 +25,18 @@ namespace ums_api.Services
             await _context.SaveChangesAsync();
         }
 
-        public Task<IEnumerable<GetLogDto>> GetLogsAsync()
+        public async Task<IEnumerable<GetLogDto>> GetLogsAsync()
         {
-            throw new NotImplementedException();
+            var logs = await _context.Logs
+                .Select(q => new GetLogDto
+                {
+                    CreatedAt = q.CreatedAt,
+                    Description = q.Description,
+                    UserName = q.UserName,
+                })
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+            return logs;
         }
 
         public Task<IEnumerable<GetLogDto>> GetMyLogsAsync(ClaimsPrincipal User)
