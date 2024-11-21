@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using ums_api.DbContext;
 using ums_api.Entities;
+using ums_api.Interfaces;
+using ums_api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     var connectionString = builder.Configuration.GetConnectionString("local");
     options.UseSqlServer(connectionString);
 });
+
+// Dependency Injection
+builder.Services.AddScoped<ILogService, LogService>();
 
 // Add Identity
 builder.Services
