@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using ums_api.DbContext;
 using ums_api.Dtos.General;
@@ -62,9 +63,18 @@ namespace ums_api.Services
             };
         }
 
-        public Task<IEnumerable<GetMessageDto>> GetMessagesAsync()
+        public async Task<IEnumerable<GetMessageDto>> GetMessagesAsync()
         {
-            throw new NotImplementedException();
+            var messages = await _context.Messages.Select(q => new GetMessageDto()
+            {
+                Id = q.Id,
+                SenderUsername = q.SenderUserName,
+                ReceiverUsername = q.ReceiverUserName,
+                Text = q.Text,
+                CreatedAt = q.CreatedAt,
+            }).OrderByDescending(q => q.CreatedAt).ToListAsync();
+
+            return messages;
         }
 
         public Task<IEnumerable<GetMessageDto>> GetMyMessagesAsync(ClaimsPrincipal User)
