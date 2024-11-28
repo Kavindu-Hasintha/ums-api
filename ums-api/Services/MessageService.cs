@@ -77,9 +77,22 @@ namespace ums_api.Services
             return messages;
         }
 
-        public Task<IEnumerable<GetMessageDto>> GetMyMessagesAsync(ClaimsPrincipal User)
+        public async Task<IEnumerable<GetMessageDto>> GetMyMessagesAsync(ClaimsPrincipal User)
         {
-            throw new NotImplementedException();
+            var loggedInUser = User.Identity.Name;
+
+            var messages = await _context.Messages
+                .Where(q => q.SenderUserName == loggedInUser || q.ReceiverUserName == loggedInUser)
+                .Select(q => new GetMessageDto()
+                {
+                    Id = q.Id,
+                    SenderUsername = q.SenderUserName,
+                    ReceiverUsername = q.ReceiverUserName,
+                    Text = q.Text,
+                    CreatedAt = q.CreatedAt,
+                }).OrderByDescending(q => q.CreatedAt).ToListAsync();
+
+            return messages;
         }
     }
 }
