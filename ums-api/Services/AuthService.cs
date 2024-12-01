@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using ums_api.Constants;
 using ums_api.Dtos.Auth;
 using ums_api.Dtos.General;
@@ -104,6 +107,28 @@ namespace ums_api.Services
             };
         }
 
+        public async Task<LoginServiceResponseDto?> LoginAsync(LoginDto loginDto)
+        {
+            // Find user with username
+            var user = await _userManager.FindByNameAsync(loginDto.Username);
+            if (user is null)
+            {
+                return null;
+            }
+
+            // Check password of user
+            var isPasswordCorrect = await _userManager.ChangePasswordAsync(user, loginDto.Password);
+            if (!isPasswordCorrect)
+            {
+                return null;
+            }
+
+            //Return token and userInfo to front-end
+            var newToken = GenerateJWTTokenAsync(user);
+            var userInfo = ;
+            
+        }
+
         public Task<UserInfoResult> GetUserDetailsByUsername(string username)
         {
             throw new NotImplementedException();
@@ -119,10 +144,7 @@ namespace ums_api.Services
             throw new NotImplementedException();
         }
 
-        public Task<LoginServiceResponseDto> LoginAsync(LoginDto loginDto)
-        {
-            throw new NotImplementedException();
-        }
+
 
         public Task<LoginServiceResponseDto> MeAsync(MeDto meDto)
         {
@@ -136,6 +158,40 @@ namespace ums_api.Services
         public Task<GeneralServiceResponseDto> UpdateRoleAsync(ClaimsPrincipal User, UpdateRoleDto updateRoleDto)
         {
             throw new NotImplementedException();
+        }
+
+        // GenerateJWTTokenAsync
+        private async Task<string> GenerateJWTTokenAsync(ApplicationUser user)
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim("FirstName", user.FirstName),
+                new Claim("LastName", user.LastName),
+            };
+
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            var authSecret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var signingCredentials = new SigningCredentials(authSecret, SecurityAlgorithms.HmacSha256);
+
+            var tokenObject = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                notBefore: DateTime.Now,
+                expires: DateTime.Now.AddHours(3),
+                claims: authClaims,
+                signingCredentials: signingCredentials
+                );
+
+            string token = new JwtSecurityTokenHandler().WriteToken(tokenObject);
+            return token;
         }
     }
 }
