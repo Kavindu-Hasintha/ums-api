@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using ums_api.Constants;
 using ums_api.Dtos.Auth;
 using ums_api.Dtos.General;
 using ums_api.Entities;
@@ -20,6 +21,36 @@ namespace ums_api.Services
             _roleManager = roleManager;
             _logService = logService;
             _configuration = configuration;
+        }
+
+        public async Task<GeneralServiceResponseDto> SeedRolesAsync()
+        {
+            bool isOwnerRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.OWNER);
+            bool isAdminRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.ADMIN);
+            bool isManagerRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.MANAGER);
+            bool isUserRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.USER);
+
+            if (isOwnerRoleExists && isAdminRoleExists && isManagerRoleExists && isUserRoleExists)
+            {
+                return new GeneralServiceResponseDto()
+                {
+                    IsSucceed = true,
+                    StatusCode = 200,
+                    Message = "Roles seeding is already done"
+                };
+            }
+
+            await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.OWNER));
+            await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.ADMIN));
+            await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.MANAGER));
+            await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.USER));
+
+            return new GeneralServiceResponseDto()
+            {
+                IsSucceed = true,
+                StatusCode = 201,
+                Message = "Roles seeding done successfully"
+            };
         }
 
         public Task<UserInfoResult> GetUserDetailsByUsername(string username)
@@ -52,10 +83,7 @@ namespace ums_api.Services
             throw new NotImplementedException();
         }
 
-        public Task<GeneralServiceResponseDto> SeedRolesAsync()
-        {
-            throw new NotImplementedException();
-        }
+
 
         public Task<GeneralServiceResponseDto> UpdateRoleAsync(ClaimsPrincipal User, UpdateRoleDto updateRoleDto)
         {
