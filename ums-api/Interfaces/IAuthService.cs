@@ -10,7 +10,7 @@ namespace ums_api.Interfaces
         Task<GeneralServiceResponseDto> RegisterAsync(RegisterDto registerDto);
         Task<LoginServiceResponseDto?> LoginAsync(LoginDto loginDto);
         Task<GeneralServiceResponseDto> UpdateRoleAsync(ClaimsPrincipal User, UpdateRoleDto updateRoleDto);
-        Task<LoginServiceResponseDto> MeAsync(MeDto meDto);
+        Task<LoginServiceResponseDto?> MeAsync(MeDto meDto);
         Task<IEnumerable<UserInfoResult>> GetUsersListAsync();
         Task<UserInfoResult> GetUserDetailsByUsername(string username);
         Task<IEnumerable<string>> GetUsernamesListAsync();

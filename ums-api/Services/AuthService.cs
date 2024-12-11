@@ -217,9 +217,39 @@ namespace ums_api.Services
             }
         }
 
-        public Task<LoginServiceResponseDto> MeAsync(MeDto meDto)
+        public async Task<LoginServiceResponseDto?> MeAsync(MeDto meDto)
         {
-            throw new NotImplementedException();
+            ClaimsPrincipal handler = new JwtSecurityTokenHandler().ValidateToken(meDto.Token, new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _configuration["JWT:ValidIssuer"],
+                ValidAudience = _configuration["JWT:ValidAudience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]))
+            }, out SecurityToken securityToken);
+
+            string decodedUsername = handler.Claims.First(q => q.Type == ClaimTypes.Name).Value;
+            if (decodedUsername is null)
+            {
+                return null;
+            }
+
+            var user = await _userManager.FindByNameAsync(decodedUsername);
+            if (user is null)
+            {
+                return null;
+            }
+
+            var newToken = await GenerateJWTTokenAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var userInfo = GenerateUserInfoObject(user, roles);
+            await _logService.SaveNewLog(user.UserName, "New token generated");
+
+            return new LoginServiceResponseDto()
+            {
+                NewToken = newToken,
+                UserInfo = userInfo
+            };
         }
 
 
