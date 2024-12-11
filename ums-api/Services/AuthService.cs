@@ -136,6 +136,94 @@ namespace ums_api.Services
             };
         }
 
+        public async Task<GeneralServiceResponseDto> UpdateRoleAsync(ClaimsPrincipal User, UpdateRoleDto updateRoleDto)
+        {
+            var user = await _userManager.FindByNameAsync(updateRoleDto.Username);
+            if (user is null)
+            {
+                return new GeneralServiceResponseDto()
+                {
+                    IsSucceed = false,
+                    StatusCode = 404,
+                    Message = "Invalid Username"
+                };
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            // Just the OWNER and ADMIN can update roles
+            if (User.IsInRole(StaticUserRoles.ADMIN))
+            {
+                // User is admin
+                if (updateRoleDto.NewRole == RoleType.USER || updateRoleDto.NewRole == RoleType.MANAGER)
+                {
+                    // admin can change the role of everyone except for owners and admins
+                    if (userRoles.Any(q => q.Equals(StaticUserRoles.OWNER) || q.Equals(StaticUserRoles.ADMIN)))
+                    {
+                        return new GeneralServiceResponseDto()
+                        {
+                            IsSucceed = false,
+                            StatusCode = 403,
+                            Message = "You are not allowed to change role of this user",
+                        };
+                    }
+                    else
+                    {
+                        await _userManager.RemoveFromRolesAsync(user, userRoles);
+                        await _userManager.AddToRoleAsync(user, updateRoleDto.NewRole.ToString());
+                        await _logService.SaveNewLog(user.UserName, "User roles updated");
+                        return new GeneralServiceResponseDto()
+                        {
+                            IsSucceed = true,
+                            StatusCode = 200,
+                            Message = "Role updated successfully"
+                        };
+                    }
+                }
+                else
+                {
+                    return new GeneralServiceResponseDto()
+                    {
+                        IsSucceed = false,
+                        StatusCode = 403,
+                        Message = "You are not allowed to change role of this user"
+                    };
+                }
+            }
+            else
+            {
+                // user is owner
+                if (userRoles.Any(q => q.Equals(StaticUserRoles.OWNER)))
+                {
+                    return new GeneralServiceResponseDto()
+                    {
+                        IsSucceed = false,
+                        StatusCode = 403,
+                        Message = "You are not allowed to change role of this user"
+                    };
+                }
+                else
+                {
+                    await _userManager.RemoveFromRolesAsync(user, userRoles);
+                    await _userManager.AddToRoleAsync(user, updateRoleDto.NewRole.ToString());
+                    await _logService.SaveNewLog(user.UserName, "User roles updated");
+
+                    return new GeneralServiceResponseDto()
+                    {
+                        IsSucceed = true,
+                        StatusCode = 200,
+                        Message = "Role updated successfully"
+                    };
+                }
+            }
+        }
+
+        public Task<LoginServiceResponseDto> MeAsync(MeDto meDto)
+        {
+            throw new NotImplementedException();
+        }
+
+
+
         public Task<UserInfoResult> GetUserDetailsByUsername(string username)
         {
             throw new NotImplementedException();
@@ -153,19 +241,13 @@ namespace ums_api.Services
 
 
 
-        public Task<LoginServiceResponseDto> MeAsync(MeDto meDto)
-        {
-            throw new NotImplementedException();
-        }
 
 
 
 
 
-        public Task<GeneralServiceResponseDto> UpdateRoleAsync(ClaimsPrincipal User, UpdateRoleDto updateRoleDto)
-        {
-            throw new NotImplementedException();
-        }
+
+
 
         // GenerateJWTTokenAsync
         private async Task<string> GenerateJWTTokenAsync(ApplicationUser user)
