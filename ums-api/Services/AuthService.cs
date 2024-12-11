@@ -117,16 +117,23 @@ namespace ums_api.Services
             }
 
             // Check password of user
-            var isPasswordCorrect = await _userManager.ChangePasswordAsync(user, loginDto.Password);
+            var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
             if (!isPasswordCorrect)
             {
                 return null;
             }
 
             //Return token and userInfo to front-end
-            var newToken = GenerateJWTTokenAsync(user);
-            var userInfo = ;
-            
+            var newToken = await GenerateJWTTokenAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var userInfo = GenerateUserInfoObject(user, roles);
+            await _logService.SaveNewLog(user.UserName, "New Login");
+
+            return new LoginServiceResponseDto()
+            {
+                NewToken = newToken,
+                UserInfo = userInfo
+            };
         }
 
         public Task<UserInfoResult> GetUserDetailsByUsername(string username)
@@ -192,6 +199,20 @@ namespace ums_api.Services
 
             string token = new JwtSecurityTokenHandler().WriteToken(tokenObject);
             return token;
+        }
+
+        private UserInfoResult GenerateUserInfoObject(ApplicationUser user, IEnumerable<string> Roles)
+        {
+            return new UserInfoResult()
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.UserName,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                Roles = Roles
+            };
         }
     }
 }
