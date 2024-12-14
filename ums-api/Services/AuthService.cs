@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -252,6 +253,22 @@ namespace ums_api.Services
             };
         }
 
+        public async Task<IEnumerable<UserInfoResult>> GetUsersListAsync()
+        {
+            var users = await _userManager.Users.ToListAsync();
+
+            List<UserInfoResult> userInfoResults = new List<UserInfoResult>();
+
+            foreach(var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var userInfo = GenerateUserInfoObject(user, roles);
+                userInfoResults.Add(userInfo);
+            }
+
+            return userInfoResults;
+        }
+
 
 
         public Task<UserInfoResult> GetUserDetailsByUsername(string username)
@@ -264,10 +281,7 @@ namespace ums_api.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<UserInfoResult>> GetUsersListAsync()
-        {
-            throw new NotImplementedException();
-        }
+
 
 
 
