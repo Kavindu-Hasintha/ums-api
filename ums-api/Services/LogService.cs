@@ -1,7 +1,8 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using ums_api.DbContext;
 using ums_api.Dtos.Log;
-using ums_api.Entities.Log;
+using ums_api.Entities;
 using ums_api.Interfaces;
 
 namespace ums_api.Services
@@ -18,7 +19,7 @@ namespace ums_api.Services
         {
             var newLog = new Log()
             {
-                Username = Username,
+                UserName = Username,
                 Description = Description
             };
             await _context.Logs.AddAsync(newLog);
