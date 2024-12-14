@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ums_api.Constants;
 using ums_api.Dtos.Message;
 using ums_api.Interfaces;
 
@@ -40,6 +41,15 @@ namespace ums_api.Controllers
         public async Task<ActionResult<IEnumerable<GetMessageDto>>> GetMyMessages()
         {
             var messages = await _messageService.GetMyMessagesAsync(User);
+            return Ok(messages);
+        }
+
+        // Route -> Get all messages with Owner access and Admin access
+        [HttpGet]
+        [Authorize(Roles = StaticUserRoles.OwnerAdmin)]
+        public async Task<ActionResult<IEnumerable<GetMessageDto>>> GetMessages()
+        {
+            var messages = await _messageService.GetMessagesAsync();
             return Ok(messages);
         }
     }
