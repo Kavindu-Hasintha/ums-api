@@ -25,5 +25,14 @@ namespace ums_api.Controllers
             var logs = await _logService.GetLogsAsync();
             return Ok(logs);
         }
+
+        [HttpGet]
+        [Route("mine")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<GetLogDto>>> GetMyLogs()
+        {
+            var logs = await _logService.GetMyLogsAsync(User);
+            return Ok(logs);
+        }
     }
 }
