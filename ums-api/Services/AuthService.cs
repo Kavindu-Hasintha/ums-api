@@ -282,23 +282,12 @@ namespace ums_api.Services
             return userInfo;
         }
 
-
-        public Task<IEnumerable<string>> GetUsernamesListAsync()
+        public async Task<IEnumerable<string>> GetUsernamesListAsync()
         {
-            throw new NotImplementedException();
+            var usernames = await _userManager.Users.Select(q => q.UserName).ToListAsync();
+
+            return usernames;
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
         // GenerateJWTTokenAsync
         private async Task<string> GenerateJWTTokenAsync(ApplicationUser user)
