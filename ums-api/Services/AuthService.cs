@@ -269,12 +269,19 @@ namespace ums_api.Services
             return userInfoResults;
         }
 
-
-
-        public Task<UserInfoResult> GetUserDetailsByUsername(string username)
+        public async Task<UserInfoResult?> GetUserDetailsByUsernameAsync(string username)
         {
-            throw new NotImplementedException();
+            var user = await _userManager.FindByNameAsync(username);
+            if (user is null)
+            {
+                return null;
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var userInfo = GenerateUserInfoObject(user, roles);
+            return userInfo;
         }
+
 
         public Task<IEnumerable<string>> GetUsernamesListAsync()
         {
