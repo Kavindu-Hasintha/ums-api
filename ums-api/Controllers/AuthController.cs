@@ -25,6 +25,13 @@ namespace ums_api.Controllers
             return StatusCode(seedResult.StatusCode, seedResult.Message);
         }
 
-
+        // Route -> Register
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        {
+            var registerResult = await _authService.RegisterAsync(registerDto);
+            return StatusCode(registerResult.StatusCode, registerResult.Message);
+        }
     }
 }
