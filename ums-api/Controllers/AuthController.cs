@@ -33,5 +33,18 @@ namespace ums_api.Controllers
             var registerResult = await _authService.RegisterAsync(registerDto);
             return StatusCode(registerResult.StatusCode, registerResult.Message);
         }
+
+        // Route -> Login
+        [HttpPost]
+        [Route("login")]
+        public async Task<ActionResult<LoginServiceResponseDto>> Login([FromBody] LoginDto loginDto)
+        {
+            var loginResult = await _authService.LoginAsync(loginDto);
+            if (loginResult is null)
+            {
+                return Unauthorized("Your credentials are invalid. Please contact to an admin");
+            }
+            return Ok(loginResult);
+        }
     }
 }
