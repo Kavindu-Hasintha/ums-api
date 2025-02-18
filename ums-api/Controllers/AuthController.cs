@@ -115,6 +115,13 @@ namespace ums_api.Controllers
             }
         }
 
-
+        // Route -> Get list of all usernames for send message
+        [HttpGet]
+        [Route("usernames")]
+        public async Task<ActionResult<IEnumerable<string>>> GetUserNamesList()
+        {
+            var usernames = await _authService.GetUsernamesListAsync();
+            return Ok(usernames);
+        }
     }
 }
