@@ -89,5 +89,32 @@ namespace ums_api.Controllers
                 return Unauthorized("Invalid Token");
             }
         }
+
+        // Route -> list of all users with details
+        [HttpGet]
+        [Route("users")]
+        public async Task<ActionResult<IEnumerable<UserInfoResult>>> GetUsersList()
+        {
+            var usersList = await _authService.GetUsersListAsync();
+
+            return Ok(usersList);
+        }
+
+        // Route -> Get a user by username
+        [HttpGet]
+        [Route("users/{userName}")]
+        public async Task<ActionResult<UserInfoResult>> GetUserDetailsByUserName([FromRoute] string userName)
+        {
+            var user = await _authService.GetUserDetailsByUsernameAsync(userName);
+            if (user is not null)
+            {
+                return Ok(user);
+            } else
+            {
+                return NotFound("Username not found");
+            }
+        }
+
+
     }
 }
